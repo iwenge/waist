@@ -1,0 +1,1415 @@
+<?php 
+error_reporting(0);
+include "connection.php";
+
+session_start();
+$email = $_SESSION['email'];
+$track = $_SESSION['track'];
+$lit = 1;
+
+if ($track!=$lit) {
+  header("location: /newversion/finapp/view2/index.php");
+  # code...
+}
+$select = "SELECT * FROM signup WHERE email='$email' ";
+$result = mysqli_query($con, $select);
+
+//selecting user details from db
+while ($row=mysqli_fetch_assoc($result)) {
+$name = $row['name'];
+$accname = $row['acnt_name'];
+$bank = $row['bank'];
+$phone = $row['phn_num'];
+$bvn = $row['bvn'];
+$acnt_num = $row['acnt_num'];
+$refcode = $row['ref'];
+}
+$_SESSION['name'] = $name;
+$_SESSION['email'] = $email;
+$_SESSION['bank'] = $bank;
+$_SESSION['bvn'] = $bvn;
+$_SESSION['phone'] = $phone;
+$_SESSION['acnt_num'] = $acnt_num;
+
+if (isset($_POST["deposit"])) {
+      $name     =   $_SESSION['name'];
+      $email    =   $_SESSION['email'];
+      $date     =   date("Y-m-d h:i:sa");
+      $dat      =   date("Y-m-d");
+      $image    =   $images;
+      $accnum   =   $_SESSION['acnt_num'];
+      $amount   =   $_POST['amnt'];
+      $amnt     =   intval(str_replace(',', '',$amount ));
+      $conn     =   0;
+
+  $_SESSION['date']     = $date;
+  $_SESSION['amnt']     = $amnt;
+       // Getting file name
+       $filename = $_FILES['image']['name'];
+         
+       // Valid extension
+       $valid_ext = array('png','jpeg','jpg');
+
+      
+     $photoExt1 = @end(explode('.', $filename)); // explode the image name to get the extension
+     $phototest1 = strtolower($photoExt1);
+      
+     $new_profle_pic = time().'.'.$phototest1;
+      
+       // Location
+       $location = "proofs/".$new_profle_pic;
+
+       // file extension
+       $file_extension = pathinfo($location, PATHINFO_EXTENSION);
+       $file_extension = strtolower($file_extension);
+
+       // Check extension
+       if(in_array($file_extension,$valid_ext)){  
+
+            // Compress Image
+            compressedImage($_FILES['image']['tmp_name'],$location,20);
+        
+        $set = "SELECT * FROM top WHERE email='$email'";
+  $setter = mysqli_query($con, $set);
+  $yen = mysqli_num_rows($setter);
+  while ($rose = mysqli_fetch_assoc($setter)) {
+     $dub = $rose['amnt'];
+     $vok = $amnt + $dub; 
+    }
+
+
+  if ($yen==1) {
+    if ($amnt > 60000 or $vok > 60000) {
+      header("location:depalert.html");
+    }
+    elseif($amnt<1000){
+      header("location:depalert.html");
+    }
+    elseif ($amnt <= 60000 or $vok <= 60000) {
+       $insert = "INSERT into `dep` (email,  name, amnt,  date,  image, con, accnum, dat) VALUES ('$email', '$name', '$amnt', '$date', '$new_profle_pic', '$conn', '$accnum', '$dat')"; 
+
+  $result = mysqli_query($con, $insert);
+        if($result==true){
+           header("location:alert.php");
+        }
+        else{
+          include "failalert.php";
+          
+        }
+    }
+  }
+
+  elseif ($yen==0) {
+    if ($amnt > 60000) {
+      include "depalert.html";
+    }
+    elseif ($amnt <= 60000) {
+       $insert = "INSERT into `dep` (email,  name, amnt,  date,  image, con, accnum, dat) VALUES ('$email', '$name', '$amnt', '$date', '$new_profle_pic', '$conn', '$accnum', '$dat')"; 
+
+  $result = mysqli_query($con, $insert);
+        if($result==true){
+           header("location:alert.php");
+        }
+        else{
+          include "failalert.php";
+          
+        }
+    }
+  }
+
+        }
+      else
+        {
+                echo "File format is not correct.";
+        }
+    }
+
+    // Compress image
+    function compressedImage($source, $path, $quality) {
+
+            $info = getimagesize($source);
+
+            if ($info['mime'] == 'image/jpeg') 
+                $image = imagecreatefromjpeg($source);
+
+            elseif ($info['mime'] == 'image/gif') 
+                $image = imagecreatefromgif($source);
+
+            elseif ($info['mime'] == 'image/png') 
+                $image = imagecreatefrompng($source);
+
+            imagejpeg($image, $path, $quality);
+
+    }
+
+
+
+
+
+if (isset($_POST["withdraw"])) {
+
+      //email amnt  date  status  name  appdate phn bal dep bank  acnt_num
+  $name     =   $_SESSION['name'];
+  $email    =   $_SESSION['email'];
+  $date     =   date("Y-m-d h:i:sa");
+  $dat      =   date("Y-m-d");
+  $bvn      =   $_SESSION['bvn'];
+  $amount   =   $_POST['amnt'];
+  $phone    =   $_SESSION['phone'];
+  $bank     =   $_SESSION['bank'];
+  $acnt_num =   $_SESSION['acnt_num'];
+  $bal      =   0;
+  $dep      =   0;
+  $amnt     =   intval(str_replace(',', '',$amount ));
+  $conn     =   3;
+
+  if ($amnt > 20000 or $amnt <=1000 and $amnt > $balance) {
+  	include "amntalert.html";
+  }
+
+  else {
+
+  	    $insert = "INSERT into `with` (email,  amnt, date,  status,  name, appdate, phn, bal, dep, bank, acnt_num, prog) VALUES ('$email', '$amnt', '$dat', '$conn', '$name', '', '$phone', '$bal', '$dep', '$bank', '$acnt_num', '$date')"; 
+  	    
+  	    $seter = "SELECT * FROM withcontrol WHERE accnum ='$acnt_num' ";
+  		$control = mysqli_query($con, $seter);
+  		$cut = mysqli_num_rows($control);
+
+  if ($cut==1) {
+    $dater = "UPDATE withcontrol SET data='$dat', status='$conn' WHERE email='$email'";
+    $hot = mysqli_query($con,$dater);
+    # code...
+  }
+  else{
+    $withint = "INSERT INTO withcontrol (email, accnum, data, status) VALUES ('$email', '$acnt_num', '$dat', '$conn' )";
+    $pro = mysqli_query($con,$withint);
+  }
+  $result = mysqli_query($con, $insert);
+        if($result){
+           header("location:withalert.html");
+        }
+        else{
+          include "failalert.php";
+          
+        }
+      
+  }
+
+
+    $_SESSION['email']    = $email;
+    $_SESSION['name']     = $name;
+    $_SESSION['date']     = $date;
+    $_SESSION['amnt']     = $amnt;
+
+
+}
+
+if (isset($_POST["loan"])) {
+  $gname    = $_POST['gname'];
+  $gemail   = $_POST['gemail'];
+  $gamount  = $_POST['gamount'];
+  $gdate    = $_POST['gdate'];
+  $lstatus  = 0;
+
+  $lselect = "SELECT * FROM loan WHERE email='$email' and status='0' or email='$email' and status='1'";
+  $rloan = mysqli_query($con, $lselect);
+  $lcount = mysqli_num_rows($rloan);
+
+  if ($lcount==1) {
+    include "failloan.html";
+  }
+  elseif ($lcount==0) {
+      $linsert = "INSERT INTO loan (email, name, amnt, shrtn, shrte,  date, status) VALUES ('$email', '$name', '$gamount', '$gname', '$gemail', '$gdate', '$lstatus')";
+  $lresult = mysqli_query($con, $linsert);
+  if ($lresult==true) {
+    include "loanalert.html";
+  }  
+}
+
+}
+
+?>
+
+<doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Student Wallet - Mobile Electronic wallet</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Finapp HTML Mobile Template">
+    <meta name="keywords" content="bootstrap, mobile template, cordova, phonegap, mobile, html, responsive" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="assets/img/favicon.png" sizes="32x32">
+    <link rel="shortcut icon" href="assets/img/favicon.png">
+    <link rel="stylesheet" type="text/css" href="assets/input.css">
+    <script type='text/javascript' src='//disappearancetickfilth.com/b4/e4/21/b4e421d180f9eb50162565d4029aad7f.js'></script>
+</head>
+
+<body>
+
+    <!-- loader -->
+    <div id="loader">
+        <img src="assets/img/logo-icon.png" alt="icon" class="loading-icon">
+    </div>
+    <!-- * loader -->
+
+    <!-- App Header -->
+    <div class="appHeader bg-primary text-light">
+        <div class="left">
+            <a href="#" class="headerButton" data-toggle="modal" data-target="#sidebarPanel">
+                <ion-icon name="menu-outline"></ion-icon>
+            </a>
+        </div>
+        <div class="pageTitle">
+            <img src="assets/img/log.png" alt="logo" class="logo">
+        </div>
+        <div class="right">
+
+            <a href="app-settings.php" class="headerButton">
+                <img src="assets/img/sample/avatar/avatar1.png" alt="image" class="imaged w32">
+            </a>
+        </div>
+    </div>
+    <!-- * App Header -->
+
+
+    <!-- App Capsule -->
+    <div id="appCapsule">
+
+        <!-- Wallet Card -->
+        <div class="section wallet-card-section pt-1">
+            <div class="wallet-card">
+                <!-- Balance -->
+                <div class="balance">
+                    <div class="left">
+                        <span class="title">Total Balance</span>
+                        <?php 
+                      $bal = "SELECT * FROM top WHERE email= '$email' ";
+                      $balresult = mysqli_query($con,$bal);
+                      while ($balrow = mysqli_fetch_assoc($balresult)) {
+                        $ten = date("Y-m-d");
+                        $baldate = $balrow['date'];
+                        $data1 =   strtotime($baldate);
+                        $data2 =  strtotime($ten);  
+                        $sec   =  ($data2 - $data1);
+                        $diff = $sec / 86400;
+
+                        $deamount = $balrow['amnt'];
+                        $calc = $deamount * 0.01;
+                        $summary = $calc * $diff;
+                        $balance = $summary + $deamount;
+                      }
+
+                      ?>
+                        <h1 class="total">&#8358;<?php echo number_format($balance); ?></h1>
+
+                        <span class="title"><?php echo $diff; ?> day(s)</span>
+                    </div>
+                    
+                </div>
+                <!-- * Balance -->
+                <!-- Wallet Footer -->
+                <div class="wallet-footer">
+                	<?php
+                    $rips = "SELECT * FROM withcontrol WHERE accnum='$acnt_num'";
+                    $rip = mysqli_query($con,$rips);
+                    $toll = mysqli_num_rows($rip);
+
+                    $panel = "SELECT * FROM panel WHERE sn='1' and withd='0'";
+                    $respanel = mysqli_query($con, $panel);
+                    $rowpanel = mysqli_num_rows($respanel);
+
+                    $seldep = "SELECT * FROM dep WHERE accnum='$acnt_num' and con='0'";
+                    $resseldep = mysqli_query($con, $seldep);
+                    $roll = mysqli_num_rows($resseldep);
+
+                    if ($roll==1) {
+                      echo "<div class='item'>
+                        <a href='#' data-toggle='modal' data-target='#withdrawActionSheet4'>
+                            <div class='icon-wrapper bg-danger'>
+                                <ion-icon name='arrow-down-outline'></ion-icon>
+                            </div>
+                            <strong>Withdraw</strong>
+                        </a>
+                    </div>";
+                    }
+                    else {
+                      if ($rowpanel==1) {
+                      echo "<div class='item'>
+                        <a href='#' data-toggle='modal' data-target='#withdrawActionSheet3'>
+                            <div class='icon-wrapper bg-danger'>
+                                <ion-icon name='arrow-down-outline'></ion-icon>
+                            </div>
+                            <strong>Withdraw</strong>
+                        </a>
+                    </div>";
+                    }
+                    else {
+                    if ($toll <= 0) {
+                      echo "<div class='item'>
+                        <a href='#' data-toggle='modal' data-target='#withdrawActionSheet'>
+                            <div class='icon-wrapper bg-danger'>
+                                <ion-icon name='arrow-down-outline'></ion-icon>
+                            </div>
+                            <strong>Withdraw</strong>
+                        </a>
+                    </div>";
+                    }
+                    elseif ($toll >=1) {
+                      while($rom = mysqli_fetch_assoc($rip)){
+                      $dream1 = $rom['data'];
+                      $dream2 = date("Y-m-d");
+                      $fit = strtotime($dream1);
+                      $fits = strtotime($dream2);
+                      $fut = $fits - $fit;
+                      $trim = $fut/86400;
+                    }
+                    if ($trim<=4){
+                    echo "
+                    <div class='item'>
+                        <a href='#' data-toggle='modal' data-target='#withdrawActionSheet2'>
+                            <div class='icon-wrapper bg-danger'>
+                                <ion-icon name='arrow-down-outline'></ion-icon>
+                            </div>
+                            <strong>Withdraw</strong>
+                        </a>
+                    </div>";}
+                    else {
+                      echo "<div class='item'>
+                        <a href='#' data-toggle='modal' data-target='#withdrawActionSheet'>
+                            <div class='icon-wrapper bg-danger'>
+                                <ion-icon name='arrow-down-outline'></ion-icon>
+                            </div>
+                            <strong>Withdraw</strong>
+                        </a>
+                    </div>";
+                      
+                    }
+                    }
+
+                    }
+                    }
+                    
+                    ?>
+                   
+
+                      <?php
+                    $depselect = "SELECT * FROM dep WHERE accnum='$acnt_num' and con='0' ";
+                    $result = mysqli_query($con,$depselect);
+                    $rows = mysqli_num_rows($result);
+
+                    $withsel = "SELECT * FROM `with` WHERE acnt_num='$acnt_num' and status='3'";
+                    $reswithsel = mysqli_query($con, $withsel);
+                    $countwith = mysqli_num_rows($reswithsel);
+
+                    if ($countwith>=1) {
+                      echo "
+                      <div class='item'>
+                        <a href='#' data-toggle='modal' data-target='#withdrawActionSheet4'>
+                            <div class='icon-wrapper'>
+                                <ion-icon name='add-outline'></ion-icon>
+                            </div>
+                            <strong>Deposit</strong>
+                        </a>
+                    </div>
+                      ";
+                    }
+                    else{
+                      if ($rows>=1) {
+                    echo "
+                    <div class='item'>
+                        <a href='#' data-toggle='modal' data-target='#depositActionSheet2'>
+                            <div class='icon-wrapper'>
+                                <ion-icon name='add-outline'></ion-icon>
+                            </div>
+                            <strong>Deposit</strong>
+                        </a>
+                    </div>";}
+                    else {
+                      echo "
+                    <div class='item'>
+                        <a href='#' data-toggle='modal' data-target='#depositActionSheet'>
+                            <div class='icon-wrapper'>
+                                <ion-icon name='add-outline'></ion-icon>
+                            </div>
+                            <strong>Deposit</strong>
+                        </a>
+                    </div>";
+                    }
+                    }
+
+                    
+                    ?>
+                    <div class="item">
+                        <a href="app-cards.php">
+                            <div class="icon-wrapper bg-success">
+                                <ion-icon name="card-outline"></ion-icon>
+                            </div>
+                            <strong>Accounts</strong>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <a href="#" data-toggle="modal" data-target="#exchangeActionSheet">
+                            <div class="icon-wrapper bg-warning">
+                                <ion-icon name="swap-vertical"></ion-icon>
+                            </div>
+                            <strong>Loan</strong>
+                        </a>
+                    </div>
+
+                </div>
+                <!-- * Wallet Footer -->
+            </div>
+        </div>
+        <!-- Wallet Card -->
+
+        <!-- Deposit Action Sheet -->
+        <div class="modal fade action-sheet" id="depositActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Balance</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form method="post" enctype="multipart/form-data">
+                              <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account1">Make Your Preferred Deposit To The Account Details Provided Below, Then Send Proof Of Payment</label>
+                                        <label class="label" for="account1">Bank Name: GT Bank</label>
+                                        <label class="label" for="account1">Account Type: CURRENT</label>
+                                        <label class="label" for="account1">Account Name: BUILDERSTECH SOLUTIONS</label>
+                                        <label class="label" for="account1">Account Number: 0531921617</label>
+                                    </div>
+                                </div>
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account1">To</label>
+                                        <select class="form-control custom-select" id="account1">
+                                            <option value="0" selected="selected">Wallet (*** 5019)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <label class="label">Enter Amount</label>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="input2">&#x20A6;</span>
+                                        </div>
+                                        <input type="text" name="amnt" id="formattedNumberField" class="form-control form-control-lg" placeholder="100" required="required">
+                                    </div>
+                                </div>
+
+                               <div class="file-input">
+  									<input type="file" id="file" name="image" class="file">
+  										<label for="file">
+    										Select payment proof
+    										<p class="file-name"></p>
+  										</label>
+								</div>
+                                <div class="custom-control custom-checkbox mt-2 mb-1">
+                            <input type="checkbox" required="required" class="custom-control-input" id="customChecka1">
+                            <label class="custom-control-label" for="customChecka1">
+                                I agree <a href="#" data-toggle="modal" data-target="#termsModalar">terms and conditions</a>
+                            </label>
+                        </div>
+
+                                <div class="form-group basic">
+                                    <button type="submit" name="deposit" class="btn btn-primary btn-block btn-lg"
+                                        >Deposit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade action-sheet" id="depositActionSheet2" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Sorry, You have a pending deposit</h5>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- * Deposit Action Sheet -->
+
+        <!-- Withdraw Action Sheet -->
+        <div class="modal fade action-sheet" id="withdrawActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Withdraw</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form method="post">
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account2d">From</label>
+                                        <select class="form-control custom-select" id="account2d">
+                                            <option value="0" selected="selected">Wallet (*** 5019)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="text11d">To</label>
+                                        <input type="email" readonly="readonly" style="cursor: no-drop;" value="<?php echo $acnt_num; ?>" class="form-control" id="text11d" placeholder="Enter IBAN">
+                                        <i class="clear-input">
+                                            <ion-icon name="close-circle"></ion-icon>
+                                        </i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <label class="label">Enter Amount</label>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="input14d">&#x20A6;</span>
+                                        </div>
+                                        <input type="number" max="<?php echo $balance; ?>" name="amnt" class="form-control form-control-lg" placeholder="0">
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <button type="submit" name="withdraw" class="btn btn-primary btn-block btn-lg"
+                                   >Withdraw</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade action-sheet" id="withdrawActionSheet2" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Sorry, you still have less than five days <?php echo $trim;?></h5>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+          <div class="modal fade action-sheet" id="withdrawActionSheet3" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Sorry, withdrawal closed at the moment</h5>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="modal fade action-sheet" id="withdrawActionSheet4" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Pending transaction in account</h5>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- * Withdraw Action Sheet -->
+
+        <!-- Send Action Sheet -->
+        <div class="modal fade action-sheet" id="sendActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Send Money</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form>
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account2">From</label>
+                                        <select class="form-control custom-select" id="account2">
+                                            <option value="0">Savings (*** 5019)</option>
+                                            <option value="1">Investment (*** 6212)</option>
+                                            <option value="2">Mortgage (*** 5021)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="text11">To</label>
+                                        <input type="email" class="form-control" id="text11"
+                                            placeholder="Enter bank ID">
+                                        <i class="clear-input">
+                                            <ion-icon name="close-circle"></ion-icon>
+                                        </i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <label class="label">Enter Amount</label>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="input14">&#x20A6;</span>
+                                        </div>
+                                        <input type="text" class="form-control form-control-lg" placeholder="0">
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <button type="button" class="btn btn-primary btn-block btn-lg"
+                                        data-dismiss="modal">Send</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- * Send Action Sheet -->
+    <!-- Terms Modal -->
+    <div class="modal fade modalbox" id="termsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terms and Conditions</h5>
+                    <a href="javascript:;" data-dismiss="modal">Close</a>
+                </div>
+                <div class="modal-body">
+                    <p align="justify">
+                      <ul type="disc">
+                        <li>At least one registered guarantor on student wallet platform</li>
+                        <li>The requested loan should not exceed the shortee(s) wallet amount</li>
+                        <li>Loan "MOST" be paid on or before the given date else the shortees account will be freeze</li>
+                      </ul>
+  
+                    </p>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- * Terms Modal -->
+
+    <!-- Terms Modal -->
+    <div class="modal fade modalbox" id="termsModalar" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terms and Conditions</h5>
+                    <a href="javascript:;" data-dismiss="modal">Close</a>
+                </div>
+                <div class="modal-body">
+                    <p align="justify">
+                      <ul>
+      <li>Ensure to leave minimum of N500 in your wallet else your withdrawal will be declined. </li>
+      <li>Once you have successfully submitted your withdrawal request, do not submit another one as both will be declined if you do. </li>
+      <li>Maintain 5 days interval, before applying for another withdrawal if you operate multiple accounts else it will be declined. </li>
+      <li>Avoid applying for withdrawal on several accounts under your management in a single day as it will be automatically detected and all the withdrawals will be declined whether or not they bear different account names. You are advised to apply on separate days. </li>
+      <li>If after 48 hours you don't get your requested fund, kindly allow extra 24 hours before submitting a complaint which may be caused by Bank Reversals most of the times or incorrect bank account details.</li>
+  </ul>
+  <p>To submit a withdrawal complaint after 72 hours, kindly whatsapp any of the Admins on 07030498562, 07039150972, 07037656329</p>
+  <p>Withdrawal Complaint will only be attended to after 72 hours from time of request.</p>
+  <p><b>Thanks for your maximum cooperation.</b></p>
+                      </ul>
+  
+                    </p>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- * Terms Modal -->
+        <!-- Exchange Action Sheet -->
+        <div class="modal fade action-sheet" id="exchangeActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Exchange</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form method="post">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-group basic">
+                                            <div class="input-wrapper">
+                                                <label class="label" for="currency1">Guarantor Name</label>
+                                                <input type="text" name="gname" class="form-control" id="text11"
+                                            placeholder="Name">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-group basic">
+                                            <div class="input-wrapper">
+                                                <label class="label" for="currency2">Guarantor Email</label>
+                                                <input type="email" name="gemail" class="form-control" id="text11"
+                                            placeholder="@Email">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <label class="label">Enter Amount</label>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="input1">&#x20A6;</span>
+                                        </div>
+                                        <input type="number" required="required" class="number form-control form-control-lg" name="gamount" >
+                                    </div>
+                                </div>
+                                 <div class="form-group basic">
+                                    <label class="label">Payback Date</label>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"  id="input1">&#xeecd;</span>
+                                        </div>
+                                        <input type="date" name="gdate" class="form-control form-control-lg" required="required">
+                                    </div>
+                                </div>
+
+                                <div class="custom-control custom-checkbox mt-2 mb-1">
+                            <input type="checkbox" required="required" class="custom-control-input" id="customChecka1">
+                            <label class="custom-control-label" for="customChecka1">
+                                I agree <a href="#" data-toggle="modal" data-target="#termsModal">terms and conditions</a>
+                            </label>
+                        </div>
+
+                                <div class="form-group basic">
+                                    <button type="submit" name="loan" class="btn btn-primary btn-block btn-lg"
+                                        >Apply</button>
+                                </div>
+
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- * Exchange Action Sheet -->
+
+        <!-- Stats -->
+        <div class="section">
+            <div class="row mt-2">
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Actual</div>
+                        <div class="value text-success">&#8358;<?php echo (number_format($deamount)); ?></div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Interest</div>
+                        <div class="value text-danger">&#8358;<?php echo (number_format($summary)); ?></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Pending DEP</div>
+                        <?php
+                        $num = "SELECT * FROM dep WHERE email = '$email' and con='0'";
+                        $resnum = mysqli_query($con,$num);
+                        while ($till = mysqli_fetch_assoc($resnum)) {
+                        	$value = $till['amnt'];
+                        }
+                         ?>
+                        <div class="value">&#x20A6; <?php echo number_format($value); ?></div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-box">
+                        <div class="title">Pending WDRL</div>
+                        <?php
+                        $nums = "SELECT * FROM `with` WHERE email = '$email' and status='3'";
+                        $resnums = mysqli_query($con,$nums);
+                        while ($tills = mysqli_fetch_assoc($resnums)) {
+                        	$values = $tills['amnt'];
+                        }
+                         ?>
+                        <div class="value">&#x20A6; <?php echo number_format($values); ?></div>
+                    </div>
+                </div>
+                &nbsp;
+                <div class="col-12">
+                    <div class="stat-box">
+                        <div class="title">Loan</div>
+                        <?php
+                        $numss = "SELECT * FROM loan WHERE email = '$email' and status='0' or email = '$email' and status='1'";
+                        $resnumss = mysqli_query($con,$numss);
+                        while ($tills = mysqli_fetch_assoc($resnumss)) {
+                          $valuess = $tills['amnt'];
+                          $lid = $tills['sn'];
+                          $pdate = strtotime($tills['date']);
+                          $appdate = strtotime($tills['appdate']);
+                          $stack = $tills['status'];
+                        }
+                          $datecak = $pdate - $appdate;
+                          $pin = $datecak/86400;
+                          $cak = $valuess * 0.012;
+                          $dri = $pin * $cak + $valuess;
+
+                          if (isset($_POST['payback'])) {
+                            $errors= array();
+                          $file_name = $_FILES['image']['name'];
+                          $file_size =$_FILES['image']['size'];
+                          $file_tmp =$_FILES['image']['tmp_name'];
+                          $file_type=$_FILES['image']['type'];
+                          $file_ext=strtolower(end(explode('.',$_FILES['image']['name'])));
+                          
+                          $extensions= array("jpeg","jpg","png");
+                          
+                          if(in_array($file_ext,$extensions)=== false){
+                             $errors[]="extension not allowed, please choose a JPEG or PNG file.";
+                          }
+                                
+                          
+                          if(empty($errors)==true){
+                             move_uploaded_file($file_tmp,"loans/" .time().$file_name);
+                             
+
+                         $images = time().$file_name;
+                          }else{
+                             print_r($errors);
+                          }
+                            $payable = $_POST['payable'];
+                            $loanup = "UPDATE loan SET status='3', payable='$payable', image='$images' WHERE sn='$lid'";
+                            $loanres = mysqli_query($con, $loanup);
+                            if ($loanres==true) {
+                              include "paybackalert.html";
+                            }
+                          }
+                         ?>
+
+                        <div class="value">&#x20A6; <?php echo number_format($valuess); ?></div>
+                        <?php 
+                        if ($stack==0) {
+                          echo "<div class='title text-danger'>Status: Pending</div>";
+                        }
+                        elseif ($stack==1) {
+                          echo "<div class='title text-success'>Status: Approved &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' data-toggle='modal' data-target='#paybackActionSheet'>Payback</a></div>";
+                        }
+                        ?>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Deposit Action Sheet -->
+        <div class="modal fade action-sheet" id="paybackActionSheet" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Payback Loan</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="action-sheet-content">
+                            <form method="post" enctype="multipart/form-data">
+                              <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account1">Make Your Preferred Deposit To The Account Details Provided Below, Then Send Proof Of Payment</label>
+                                        <label class="label" for="account1">Bank Name: GT Bank</label>
+                                        <label class="label" for="account1">Account Type: CURRENT</label>
+                                        <label class="label" for="account1">Account Name: BUILDERSTECH SOLUTIONS</label>
+                                        <label class="label" for="account1">Account Number: 0531921617</label>
+                                    </div>
+                                </div>
+                                <div class="form-group basic">
+                                    <div class="input-wrapper">
+                                        <label class="label" for="account1">Loan amount</label>
+                                        <input type="text" name="amnt" id="formattedNumberField" class="form-control form-control-lg" value="<?php echo number_format($valuess); ?>" readonly="readonly" required="required">
+                                        <input type="text" name="lon" hidden="hidden" value="<?php echo $valuess; ?>" readonly="readonly" required="required">
+                                    </div>
+                                </div>
+
+                                <div class="form-group basic">
+                                    <label class="label">Payable Amount</label>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" id="input2">&#x20A6;</span>
+                                        </div>
+                                        <input type="text" name="amnt" id="formattedNumberField" class="form-control form-control-lg" value="<?php echo number_format($dri); ?>" readonly="readonly" required="required">
+                                        <input type="text" name="payable" hidden="hidden" value="<?php echo $dri; ?>" readonly="readonly" required="required">
+                                        <input type="text" name="lid" hidden="hidden" value="<?php echo $lid; ?>">
+                                    </div>
+                                </div>
+
+                               <div class="file-input">
+                      <label for="file" id="get_file">
+                        Select payment proof
+                        <input type="file" id="my_file" name="image" hidden="hidden">
+                      </label>
+                </div>
+
+                                <div class="form-group basic">
+                                <button type="submit" name="payback" class="btn btn-primary btn-block btn-lg"
+                                        >Payback</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- * Stats -->
+
+        <!-- Transactions -->
+        <div class="section mt-4">
+            <div class="section-heading">
+                <h2 class="title">Deposits</h2>
+                <a href="app-transactions.php" class="link">View All</a>
+            </div>
+            <div class="transactions">
+                <!-- item -->
+                <?php 
+                $dep = "SELECT * FROM dep WHERE email = '$email' LIMIT 1";
+                $resdep = mysqli_query($con,$dep);
+                while ($rock = mysqli_fetch_assoc($resdep)) {
+                
+                 ?>
+                <a href="app-transaction-detail.php?ID=<?php echo $rock['sn']; ?>" class="item">
+                    <div class="detail">
+                        <img src="assets/img/sample/brand/1.jpg" alt="img" class="image-block imaged w48">
+                        <div>
+                            <strong><?php echo $rock['date']; ?></strong>
+                            <p>View status</p>
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="price text-danger"> &#x20A6; <?php echo number_format($rock['amnt']);?></div>
+                    </div>
+                </a>
+            <?php }?>
+                <!-- * item -->
+            </div>
+        </div>
+        <!-- * Transactions -->
+                <!-- Monthly Bills -->
+        <div class="section full mt-4">
+            <div class="section-heading padding">
+                <h2 class="title">Withdraws</h2>
+                <a href="app-bills.php" class="link">View All</a>
+            </div>
+            <div class="carousel-multiple owl-carousel owl-theme shadowfix">
+                <!-- item -->
+                  <?php 
+                $deps = "SELECT * FROM `with` WHERE email = '$email' LIMIT 1";
+                $resdeps = mysqli_query($con,$deps);
+                while ($rocks = mysqli_fetch_assoc($resdeps)) {
+                
+                 ?>
+                <div class="item">
+                    <div class="bill-box">
+                        <div class="img-wrapper">
+                            <img src="assets/img/sample/brand/1.jpg" alt="img" class="image-block imaged w48">
+                        </div>
+                        <div class="price">&#x20A6;<?php echo $rocks['amnt']; ?></div>
+                        <p><?php echo $rocks['date']; ?></p>
+                        <a href="#" class="btn btn-primary btn-block btn-sm"><?php if ($rocks['status']==3) {
+                        	echo "PENDING";
+                        }
+                        else {
+                        	echo "PAID";
+                        } ?></a>
+                    </div>
+                </div>
+            <?php }?>
+                <!-- * item -->
+               
+            </div>
+        </div>
+        <!-- * Monthly Bills -->
+                <!-- Transactions -->
+        <div class="section mt-4">
+            <div class="section-heading">
+                <h2 class="title">Paybacks</h2>
+                <a href="payback-list.php" class="link">View All</a>
+            </div>
+            <div class="transactions">
+                <!-- item -->
+                <?php 
+                $los = "SELECT * FROM loan WHERE email = '$email' and status='3' or email = '$email' and status='4' LIMIT 1";
+                $reslos = mysqli_query($con,$los);
+                while ($ros = mysqli_fetch_assoc($reslos)) {
+                
+                 ?>
+                <a href="loan-transaction.php?ID=<?php echo $ros['sn']; ?>" class="item">
+                    <div class="detail">
+                        <img src="assets/img/sample/brand/1.jpg" alt="img" class="image-block imaged w48">
+                        <div>
+                            <strong><?php echo $ros['date']; ?></strong>
+                            <p>View status</p>
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="price text-danger"> &#x20A6; <?php echo number_format($ros['amnt']);?></div>
+                    </div>
+                </a>
+            <?php }?>
+                <!-- * item -->
+            </div>
+        </div>
+        <!-- * Transactions -->
+                <!-- Send Money -->
+        <div class="section full mt-4">
+            <div class="section-heading padding">
+                <h2 class="title">Referals</h2>
+            </div>
+            <div class="shadowfix carousel-small owl-carousel owl-theme">
+                <!-- item -->
+                <?php
+                $refer = "SELECT * FROM signup WHERE referals = '$refcode'";
+                $refres = mysqli_query($con,$refer);
+                $count = 0;
+                while ($rose = mysqli_fetch_assoc($refres)) {
+                
+                 ?>
+                <div class="item">
+                    <a href="#">
+                        <div class="user-card">
+                            <img src="assets/img/sample/avatar/avatar1.png" alt="img" class="imaged w-48">
+                            <?php echo ++$count; ?>
+                            <strong><?php echo $rose['name'];?></strong>
+                        </div>
+                    </a>
+                </div>
+            <?php }?>
+                <!-- * item -->
+                
+            </div>
+        </div>
+        <!-- * Send Money -->
+
+        <!-- my cards -->
+                            <!-- card block -->
+                    
+        <div class="section full mt-4">
+            <div class="section-heading padding">
+                <h2 class="title">Wallet Accounts</h2>
+                <a href="app-cards.php" class="link">View All</a>
+            </div>
+                 <?php 
+                            $wallet = "SELECT * FROM signup WHERE acnt_num='$acnt_num' LIMIT 2";
+                            $wall = mysqli_query($con,$wallet);
+                            while ($line = mysqli_fetch_assoc($wall)) {
+                            ?>                     	
+            <div class="">
+                <div class="item">
+                    <div class="card-block bg-primary">
+                        <div class="card-main">
+
+                         
+                            <div class="balance">
+                                <span class="label">ACTUAL</span>
+                                <?php 
+                                $actual = "SELECT * FROM top WHERE email='".$line['email']."'";
+                                $act = mysqli_query($con,$actual);
+                                while ($luck = mysqli_fetch_assoc($act)) {
+                                
+                                ?>
+                                <h1 class="title">&#x20A6;<?php echo number_format($luck['amnt']); ?></h1>
+                            
+                            </div>
+                            <div class="in">
+                                <div class="card-number">
+                                    <span class="label">Wallet-Email</span>
+                                   <?php echo $line['email']; ?>
+                                </div>
+                                <div class="bottom">
+                                    <div class="card-expiry">
+                                        <span class="label">Deposit Date</span>
+                                        <?php echo $luck['date']; ?>
+                                    </div>
+                                    
+                                    <div class="card-ccv">
+                                        <span class="label">Days</span>
+                                        <?php 
+                                        $date1 = strtotime($luck['date']);
+                                        $date2 = strtotime(date("Y-m-d"));
+                                        $lator = $date2 - $date1;
+                                        $vok = $lator/86400;
+                                        echo $vok;
+                                        ?>
+                                    </div>
+                                    <p>
+                                    &nbsp;
+                                </p>
+                                 <p>
+                                    &nbsp;
+                                </p>
+                                 <p>
+                                    &nbsp;
+                                </p>
+                                    <div class="card-ccv">
+                                        <span class="label">Balance</span>
+                                        <?php 
+                                        $date1 = strtotime($luck['date']);
+                                        $date2 = strtotime(date("Y-m-d"));
+                                        $lator = $date2 - $date1;
+                                        $vok = $lator/86400;
+                                        $daily = $luck['amnt'] * 0.01 * $vok + $luck['amnt'];
+                                        echo"&#x20A6;".number_format($daily)."";
+                                        ?>
+                                    </div>
+                                    <?php }?>
+                                </div>
+                                 
+                            </div>
+                       
+                        </div>
+                    </div>
+                    
+                    <!-- * card block -->
+                </div>
+
+
+            </div>
+            <p>
+            	&nbsp;
+            </p>
+ <?php }?>
+        </div>
+
+        <!-- * my cards -->
+
+
+        
+
+        <!-- app footer -->
+        <div class="appFooter">
+            <div class="footer-title">
+                Copyright © Student wallet <?php $dril = date("Y"); echo $dril; ?>. All Rights Reserved.
+            </div>
+            Genesis Solutions
+        </div>
+        <!-- * app footer -->
+
+    </div>
+    <!-- * App Capsule -->
+
+
+    <!-- App Bottom Menu -->
+    <div class="appBottomMenu">
+        <a href="app-index.php" class="item active">
+            <div class="col">
+                <ion-icon name="pie-chart-outline"></ion-icon>
+                <strong>Overview</strong>
+            </div>
+        </a>
+        <a href="app-pages.html" class="item">
+            <div class="col">
+                <ion-icon name="document-text-outline"></ion-icon>
+                <strong>Pages</strong>
+            </div>
+        </a>
+        <a href="app-cards.php" class="item">
+            <div class="col">
+                <ion-icon name="card-outline"></ion-icon>
+                <strong>My Accounts</strong>
+            </div>
+        </a>
+        <a href="app-settings.php" class="item">
+            <div class="col">
+                <ion-icon name="settings-outline"></ion-icon>
+                <strong>Settings</strong>
+            </div>
+        </a>
+    </div>
+    <!-- * App Bottom Menu -->
+
+    <!-- App Sidebar -->
+    <div class="modal fade panelbox panelbox-left" id="sidebarPanel" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <!-- profile box -->
+                    <div class="profileBox pt-2 pb-2">
+                        <div class="image-wrapper">
+                            <img src="assets/img/sample/avatar/avatar1.png" alt="image" class="imaged  w36">
+                        </div>
+                        <div class="in">
+                            <strong style="text-transform: capitalize;"><?php echo $name; ?></strong>
+                            <div class="text-muted">Ref Code: <?php echo $refcode; ?></div>
+                            
+                        </div>
+                        
+                        <a href="#" class="btn btn-link btn-icon sidebar-close" data-dismiss="modal">
+                            <ion-icon name="close-outline"></ion-icon>
+                        </a>
+                    </div>
+                    <!-- * profile box -->
+                    <!-- balance -->
+                    <div class="sidebar-balance">
+                        <div class="listview-title">Balance</div>
+                        <div class="in">
+                            <h1 class="amount">&#8358;<?php echo number_format($balance);  ?></h1>
+                        </div>
+                        <div class="text" style="color:white;"><?php echo $email; ?></div>
+                        <div class="text" style="color:white;">Acnt: <?php echo $acnt_num; ?></div>
+                        <div class="text" style="color:white;">Bank: <?php echo $bank; ?></div>
+                    </div>
+                    <!-- * balance -->
+
+                    <!-- menu -->
+                    <div class="listview-title mt-1">Menu</div>
+                    <ul class="listview flush transparent no-line image-listview">
+                        <li>
+                            <a href="app-index.php" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="pie-chart-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Overview
+                                    <span class="badge badge-primary">10</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="app-pages.html" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="document-text-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Pages
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="app-cards.php" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="card-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    My Accounts
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                    <!-- * menu -->
+
+                    <!-- others -->
+                    
+
+                     <div class="listview-title mt-1">Refer and earn</div>
+                    <ul class="listview flush transparent no-line image-listview">
+                        <li>
+                            <a href="/newversion/finapp/view2/app-sms-verification.php" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="log-out-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Send Link
+                                </div>
+
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/newversion/finapp/view2/app-qr-code.php" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="log-out-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Scan QR
+                                </div>
+
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="listview-title mt-1">Others</div>
+                    <ul class="listview flush transparent no-line image-listview">
+                        <li>
+                            <a href="change-pw.php" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="log-out-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Change Password
+                                </div>
+                            </a>
+                        </li>
+                                                <li>
+                            <a href="app-logout.php" class="item">
+                                <div class="icon-box bg-primary">
+                                    <ion-icon name="log-out-outline"></ion-icon>
+                                </div>
+                                <div class="in">
+                                    Log out
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                    <!-- * others -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- * App Sidebar -->
+
+    <!-- ///////////// Js Files ////////////////////  -->
+    <!-- Jquery -->
+    <script src="assets/js/lib/jquery-3.4.1.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="assets/js/lib/popper.min.js"></script>
+    <script src="assets/js/lib/bootstrap.min.js"></script>
+    <!-- Ionicons -->
+    <script src="https://unpkg.com/ionicons@5.0.0/dist/ionicons.js"></script>
+    <!-- Owl Carousel -->
+    <script src="assets/js/plugins/owl-carousel/owl.carousel.min.js"></script>
+    <!-- Base Js File -->
+    <script src="assets/js/base.js"></script>
+
+
+<!--     styling the input type file
+ -->
+ 		<script type="text/javascript">
+ 			const file = document.querySelector('#file');
+file.addEventListener('change', (e) => {
+  // Get the selected file
+  const [file] = e.target.files;
+  // Get the file name and size
+  const { name: fileName, size } = file;
+  // Convert size in bytes to kilo bytes
+  const fileSize = (size / 1000).toFixed(2);
+  // Set the text content
+  const fileNameAndSize = `${fileName} - ${fileSize}KB`;
+  document.querySelector('.file-name').textContent = fileNameAndSize;
+});
+
+var fnf = document.getElementById("formattedNumberField");
+fnf.addEventListener('keyup', function(evt){
+    var n = parseInt(this.value.replace(/\D/g,''),10);
+    fnf.value = n.toLocaleString();
+}, false);
+
+var el = document.querySelector('input.number');
+el.addEventListener('keyup', function (event) {
+  if (event.which >= 37 && event.which <= 40) return;
+
+  this.value = this.value.replace(/\D/g, '')
+                         .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+});
+ 		</script>
+    <script type="text/javascript">
+     document.getElementById('get_file').onclick = function() {
+    document.getElementById('my_file').click();
+};
+    </script>
+</body>
+
+</html>
